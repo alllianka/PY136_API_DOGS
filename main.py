@@ -2,8 +2,11 @@ import requests
 import sys
 import json
 from tokens import token
+from tqdm import tqdm
+import time
 
 log_list = []
+count = 0
 breed = input("Введите название породы на английском языке:").strip().lower()  # gпользователь вводит название породы
 dogs_url = f'https://dog.ceo/api/breed/{breed}'                                # формируется URL запрос
 breed_response = requests.get(dogs_url+'/images/random')
@@ -13,6 +16,7 @@ if breed_response.status_code!=200 and breed_response.json()['status']=='error':
 breed_link = breed_response.json()['message']  # получить ссылку на фото собаки
 log_list.append(breed_response.json())
 breed_photo_name = breed_link.split('/')[-1]   # получить название фото собаки
+count+=1
 
 yd_url = 'https://cloud-api.yandex.net/v1/disk/resources'
 headers = {'Authorization': f'OAuth {token}'}
@@ -32,7 +36,7 @@ if sub_breed_response.json()['message'] == []:
 else:
     for sub_breed in sub_breed_response.json()['message']:
         sub_breed_image = requests.get(f'{dogs_url}/{sub_breed}/images/random')
-        print(sub_breed_image.json())
+        count +=1
         sub_breed_image_link = sub_breed_image.json()['message']
         sub_breed_photo_name = sub_breed_image_link.split('/')[-1]   # получить название фото под-породы
         # загрузить фото под-породы на диск в папку /порода/под-порода+название_фото
@@ -51,6 +55,9 @@ json_string = json.dumps(log_list)
 with open(f"{breed}.json", "w", encoding="utf-8") as log_file:
     json.dump(json_string, log_file)
 
+my_list = list(range(1, count + 1))
+for i in tqdm(my_list):
+    time.sleep(1)
 
 
 
